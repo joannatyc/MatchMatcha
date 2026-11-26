@@ -4,211 +4,315 @@
   "items": {
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1111020c1": {
       "name": "Tenju",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1112020c1": {
       "name": "Urasenke School Favored Matcha Keichi no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1114020c1": {
       "name": "Mushakojisenke School Favored Matcha Suisho no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1121020c1": {
       "name": "Choan",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1122020c1": {
       "name": "Urasenke School Favored Matcha Kiun",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1124020c1": {
       "name": "Mushakojisenke School Favored Matcha Shofu",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1131020c1": {
       "name": "Eiju",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1132020c1": {
       "name": "Urasenke School Favored Matcha Tama no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1134040c1": {
       "name": "Daitokuji Temple Favored Matcha Itteikisui (GOLD)",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1135020c1": {
       "name": "Tsubokiri Matcha",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1141020c1": {
       "name": "Unkaku",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1142020c1": {
       "name": "Urasenke School Favored Matcha Shohaku",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1143020c1": {
       "name": "Enshuryu School Favored Matcha Ichigen no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1144020c1": {
       "name": "Yabunouchi School Favored Matcha Seiwa no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1151020c1": {
       "name": "Kinrin",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1152020c1": {
       "name": "Urasenke School Favored Matcha Shoun no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1153020c1": {
       "name": "Enshuryu School Favored Matcha Hatsu no Mori",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1154020c1": {
       "name": "Yabunouchi School Favored Matcha Ao no Mori",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1161020c1": {
       "name": "Wako",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1171020c1": {
       "name": "Yugen",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1172020c1": {
       "name": "Urasenke School Favored Matcha Shoka no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1174040c1": {
       "name": "Shokokuji Temple Favored Matcha Mannen no Midori",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1181040c1": {
       "name": "Chigi no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1182020c1": {
       "name": "Urasenke School Favored Matcha Seijo no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1183040c1": {
       "name": "Sohenryu School Favored Matcha Kokonoe no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1184040c1": {
       "name": "Shokokuji Temple Favored Matcha Joko",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1186000cc": {
       "name": "Sweetened Matcha – Excellent",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1191040c1": {
       "name": "Isuzu",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1192020c1": {
       "name": "Omotesenke School Favored Matcha Myofu no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11a1040c1": {
       "name": "Aoarashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11a2020c1": {
       "name": "Omotesenke School Favored Matcha Saiun",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11a4040c1": {
       "name": "Daitokuji Temple Favored Matcha Itteikisui",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11b1100c1": {
       "name": "Wakatake",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11b2040c1": {
       "name": "Omotesenke School Favored Matcha Sanyu no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11b5040c1": {
       "name": "Gabaron Matcha",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11c2020c1": {
       "name": "Omotesenke School Favored Matcha Kissho",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/11c3020c1": {
       "name": "Sohenryu School Favored Matcha Miya no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1262040c1": {
       "name": "Cooking Matcha (in a sifter can) – Excellent",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1c55000cc": {
       "name": "Sweetened Matcha – Designed For Milk",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1d23040c1": {
       "name": "Sohenryu School Favored Matcha Tomo no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1d48020c1": {
       "name": "Christmas Limited Edition Matcha Seiya no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1d9d000cc": {
       "name": "Matcha Soda",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1dbd020c1": {
       "name": "Matcha for cold water Suzukumo",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1dcd020c1": {
       "name": "Matcha for cold water Awaraku",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1f52020c1": {
       "name": "Yabunouchi School Iemoto Favored Matcha Hekiun no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1f62020c1": {
       "name": "Yabunouchi School Iemoto Favored Matcha Yoyo no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1f68020c1": {
       "name": "Omotesenke School Yuyusai Iemoto Favored Matcha Saiho no Mukashi",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1f78020c1": {
       "name": "Omotesenke School Yuyusai Iemoto Favored Matcha Yukyu no Shiro",
-      "status": "unknown"
+      "source": "text",
+      "status": "unknown",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1f94020c1": {
       "name": "Low Caffeine Matcha",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g28200c6": {
       "name": "Hojicha Mix",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g36020c1": {
       "name": "Kiwami Choan",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g9d000cc": {
       "name": "Matcha Mix",
-      "status": "unknown"
+      "source": "text",
+      "status": "out",
+      "variants": {}
     }
   }
 }
