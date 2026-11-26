@@ -44,6 +44,7 @@ HEADERS = {
 }
 OUT_WORDS = ["out of stock", "sold out", "outofstock", "在庫切れ", "品切れ", "売り切れ", "完売", "入荷待ち"]
 IN_WORDS = ["add to cart", "add to basket", "in stock", "instock", "カートに入れる", "購入する", "buy now"]
+NOTICE_RE = re.compile(r"temporarily marked as sold out|high volume of orders|may be sold out", re.I)
 FAIL_ALERT_AFTER = 12  # 連續失敗幾次後傳一次 LINE 警告（5 分鐘一次 ≈ 1 小時）
 
 
@@ -148,6 +149,29 @@ def parse_product(html):
     """解析單一商品頁。回傳 (status, {規格: True/False}, 判斷依據)"""
     soup = BeautifulSoup(html, "html.parser")
 
+    # 0) 丸久小山園的寫法：每個規格一列 .product-form-row，裡面有
+    #    <p class="stock in-stock / out-of-stock"> 和「加入購物車」按鈕
+    rows = soup.select(".product-form-row.woocommerce-variation, .product-form-row[data-variation_id]")
+    variants = {}
+    for row in rows:
+        size = row.select_one(".pa-size dd") or row.select_one(".pa-sku dd")
+        label = size.get_text(strip=True) if size else row.get("data-variation_id", "?")
+        st = row.select_one(".stock")
+        st_cls = " ".join(st.get("class", [])).lower() if st else ""
+        btn = row.select_one("button.single_add_to_cart_button, button[type=submit]")
+        btn_off = btn is not None and (btn.has_attr("disabled") or "disabled" in " ".join(btn.get("class", [])))
+        if "out-of-stock" in st_cls:
+            ok = False
+        elif "in-stock" in st_cls:
+            ok = True
+        elif btn is not None:
+            ok = not btn_off
+        else:
+            continue
+        variants[label] = variants.get(label, False) or ok
+    if variants:
+        return ("in" if any(variants.values()) else "out"), variants, "variant-rows"
+
     # 1) WooCommerce 多規格商品：表單裡有每個規格的庫存 JSON
     form = soup.select_one("form.variations_form, form[data-product_variations]")
     if form and form.get("data-product_variations") not in (None, "", "false"):
@@ -191,6 +215,9 @@ def parse_product(html):
 
     # 5) 最後用文字判斷，並記下是哪段文字（方便檢查有沒有判斷錯）
     body = soup.select_one("main") or soup.body or soup
+    # 移除網站的固定公告（例如「部分抹茶可能暫時標示為售完」），避免誤判成缺貨
+    for s in body.find_all(string=NOTICE_RE):
+        s.replace_with("")
     status = classify(body)
     text = re.sub(r"\s+", " ", body.get_text(" ", strip=True))
     low = text.lower()
@@ -297,11 +324,20 @@ def check_once(debug=False):
 
     # 分類頁看不出庫存的商品，逐一打開商品頁檢查
     page_errors = 0
+    debug_saved = False
+    state.pop("debug", None)
     for u, v in current.items():
         if v["status"] != "unknown" or u in urls:
             continue
         try:
-            v["status"], v["variants"], v["source"] = parse_product(fetch(u))
+            page_html = fetch(u)
+            v["status"], v["variants"], v["source"] = parse_product(page_html)
+            if v["status"] == "unknown" and not debug_saved:
+                # 記下一頁判斷不出來的網頁片段，方便除錯（存在 state.json 的 debug 欄位）
+                psoup = BeautifulSoup(page_html, "html.parser")
+                part = psoup.select_one("#single-product") or psoup.select_one("main") or psoup.body
+                state["debug"] = {"url": u, "html": re.sub(r"\s+", " ", str(part))[:8000]}
+                debug_saved = True
         except Exception as e:
             page_errors += 1
             v["source"] = f"error: {e}"[:120]
