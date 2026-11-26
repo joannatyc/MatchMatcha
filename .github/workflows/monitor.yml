@@ -27,7 +27,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Check stock every 5 minutes (about 5.5 hours)
+      - name: Check stock (business hours every 2 min, otherwise hourly)
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
@@ -38,14 +38,31 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           end=$((SECONDS + 330*60))
           while [ $SECONDS -lt $end ]; do
-            python monitor.py || echo "!! 這次檢查出錯，5 分鐘後再試"
+            python monitor.py || echo "!! 這次檢查出錯，下次再試"
             git add state.json 2>/dev/null || true
             if ! git diff --cached --quiet; then
               git commit -q -m "update stock state"
               git pull -q --rebase || true
               git push -q || echo "!! state.json 儲存失敗"
             fi
-            sleep 300
+            # 日本營業時間（週一到週五 8:55–17:35）每 2 分鐘，其他時間每 1 小時
+            dow=$(TZ=Asia/Tokyo date +%u); hm=$(TZ=Asia/Tokyo date +%H%M)
+            if [ "$dow" -le 5 ] && [ "$((10#$hm))" -ge 855 ] && [ "$((10#$hm))" -le 1735 ]; then
+              wait=120
+            else
+              # 非營業時間：每小時一次，但快到營業時間時提早醒來
+              wait=3600
+              if [ "$dow" -le 5 ] && [ "$((10#$hm))" -lt 855 ]; then
+                mins=$(( (8*60+55) - (10#${hm:0:2}*60 + 10#${hm:2:2}) ))
+                [ $((mins*60)) -lt $wait ] && wait=$((mins*60))
+              fi
+            fi
+            remain=$((end - SECONDS))
+            [ $remain -le 0 ] && break
+            [ $wait -gt $remain ] && wait=$remain
+            [ $wait -lt 60 ] && wait=60
+            echo "  下次檢查在 $((wait/60)) 分鐘後（日本時間 $(TZ=Asia/Tokyo date +%a\ %H:%M)）"
+            sleep $wait
           done
 
       - name: Start next round
