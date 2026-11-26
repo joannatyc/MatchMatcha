@@ -139,6 +139,56 @@ def parse_page(html, page_url):
     return items, next_url
 
 
+def parse_product(html):
+    """解析單一商品頁。回傳 (status, {規格: True/False}, 判斷依據)"""
+    soup = BeautifulSoup(html, "html.parser")
+
+    # 1) WooCommerce 多規格商品：表單裡有每個規格的庫存 JSON
+    form = soup.select_one("form.variations_form, form[data-product_variations]")
+    if form and form.get("data-product_variations") not in (None, "", "false"):
+        try:
+            data = json.loads(form["data-product_variations"])
+            variants = {}
+            for v in data:
+                label = " / ".join(str(x) for x in (v.get("attributes") or {}).values() if x) \
+                        or str(v.get("variation_id", "?"))
+                ok = bool(v.get("is_in_stock")) and v.get("is_purchasable", True) is not False
+                variants[label] = variants.get(label, False) or ok
+            if variants:
+                return ("in" if any(variants.values()) else "out"), variants, "variations"
+        except (ValueError, TypeError, AttributeError):
+            pass
+
+    # 2) 庫存文字標籤 <p class="stock in-stock / out-of-stock">
+    labels = soup.select(".stock")
+    cls = " ".join(" ".join(e.get("class", [])) for e in labels).lower()
+    if "out-of-stock" in cls or "outofstock" in cls:
+        if "in-stock" not in cls.replace("out-of-stock", ""):
+            return "out", {}, "stock-label"
+    if "in-stock" in cls.replace("out-of-stock", ""):
+        return "in", {}, "stock-label"
+
+    # 3) 商品主區塊的 class（instock / outofstock）
+    main = soup.select_one("div[id^=product-], .product.type-product, main .product")
+    if main is not None:
+        c = " ".join(main.get("class", [])).lower()
+        if "outofstock" in c:
+            return "out", {}, "product-class"
+        if "instock" in c:
+            return "in", {}, "product-class"
+
+    # 4) 加入購物車按鈕
+    btn = soup.select_one("button.single_add_to_cart_button, button[name=add-to-cart], "
+                          "input[name=add-to-cart], button[type=submit].add-to-cart")
+    if btn is not None:
+        disabled = btn.has_attr("disabled") or "disabled" in " ".join(btn.get("class", []))
+        return ("out" if disabled else "in"), {}, "cart-button"
+
+    # 5) 最後用文字判斷
+    body = soup.select_one("main") or soup.body or soup
+    return classify(body), {}, "text"
+
+
 def scan(url, max_pages=10):
     items, page, n = {}, url, 0
     visited = set()
@@ -216,18 +266,40 @@ def check_once(debug=False):
     if keywords:
         current = {u: v for u, v in current.items() if any(k in v["name"].lower() for k in keywords)}
 
+    # 分類頁看不出庫存的商品，逐一打開商品頁檢查
+    page_errors = 0
+    for u, v in current.items():
+        if v["status"] != "unknown" or u in urls:
+            continue
+        try:
+            v["status"], v["variants"], v["source"] = parse_product(fetch(u))
+        except Exception as e:
+            page_errors += 1
+            v["source"] = f"error: {e}"[:120]
+        time.sleep(1)
+    if page_errors:
+        print(f"  有 {page_errors} 個商品頁讀取失敗，這次先略過")
+
     if debug:
         print(f"共找到 {len(current)} 項商品：")
         for u, v in sorted(current.items(), key=lambda x: x[1]["name"]):
             mark = {"in": "✅ 有貨", "out": "❌ 缺貨", "unknown": "❔ 不確定"}[v["status"]]
-            print(f"  {mark}  {v['name']}\n          {u}")
+            print(f"  {mark}  {v['name']}  [{v.get('source', 'catalog')}]")
+            for label, ok in (v.get("variants") or {}).items():
+                print(f"          {'✅' if ok else '❌'} {label}")
+            print(f"          {u}")
         return
 
     old = state.get("items", {})
-    restocked = [
-        (u, v) for u, v in current.items()
-        if v["status"] == "in" and old.get(u, {}).get("status") != "in"
-    ]
+    restocked = []
+    for u, v in current.items():
+        if v["status"] != "in":
+            continue
+        prev = old.get(u, {})
+        prev_vars = prev.get("variants") or {}
+        new_vars = [k for k, ok in (v.get("variants") or {}).items() if ok and not prev_vars.get(k)]
+        if prev.get("status") != "in" or new_vars:
+            restocked.append((u, v, new_vars))
 
     if not state.get("initialized"):
         in_stock = [v["name"] for v in current.values() if v["status"] == "in"]
@@ -238,13 +310,17 @@ def check_once(debug=False):
         state["initialized"] = True
     elif restocked:
         lines = [f"🍵 丸久小山園補貨了！（{now_tw()}）", ""]
-        for u, v in restocked:
-            lines += [f"• {v['name']}", f"  {u}"]
+        for u, v, new_vars in restocked:
+            lines.append(f"• {v['name']}")
+            if new_vars:
+                lines.append("  規格：" + "、".join(new_vars))
+            lines.append(f"  {u}")
         lines += ["", "快去搶 👉 " + urls[0]]
         line_push("\n".join(lines))
 
     print(f"[{now_tw()}] 檢查完成：{len(current)} 項，"
-          f"有貨 {sum(v['status'] == 'in' for v in current.values())}，新補貨 {len(restocked)}")
+          f"有貨 {sum(v['status'] == 'in' for v in current.values())}，"
+          f"不確定 {sum(v['status'] == 'unknown' for v in current.values())}，新補貨 {len(restocked)}")
     state["items"] = current
     save_state(state_path, state)
 
