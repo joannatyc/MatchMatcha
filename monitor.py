@@ -4,7 +4,7 @@
 
 環境變數：
   LINE_CHANNEL_ACCESS_TOKEN  LINE Messaging API 的 Channel access token（必填）
-  LINE_USER_ID               要收通知的 LINE user ID（必填，U 開頭）
+  LINE_USER_ID               （選填）U 開頭的 User ID；沒有就用廣播傳給機器人的所有好友
   WATCH_URLS                 要監測的網址，逗號分隔（預選：抹茶分類頁）
   WATCH_KEYWORDS             只通知名稱含這些字的商品，逗號分隔，不分大小寫（留空＝全部）
   STATE_FILE                 狀態檔路徑（預設 state.json）
@@ -288,21 +288,28 @@ def scan(url, max_pages=10):
 # ---------- LINE ----------
 
 def line_push(text):
+    """有正確的 User ID（U 開頭 33 字元）就單獨傳給你；否則用「廣播」傳給所有好友"""
     token = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN", "").strip()
     user = os.environ.get("LINE_USER_ID", "").strip()
-    if not token or not user:
-        print("!! 沒有設定 LINE_CHANNEL_ACCESS_TOKEN / LINE_USER_ID，訊息只印在畫面上：\n" + text)
+    if not token:
+        print("!! 沒有設定 LINE_CHANNEL_ACCESS_TOKEN，訊息只印在畫面上：\n" + text)
         return False
     chunks = [text[i:i + 4900] for i in range(0, len(text), 4900)][:5]
+    messages = [{"type": "text", "text": c} for c in chunks]
+    if re.fullmatch(r"U[0-9a-f]{32}", user):
+        url, body = "https://api.line.me/v2/bot/message/push", {"to": user, "messages": messages}
+    else:
+        url, body = "https://api.line.me/v2/bot/message/broadcast", {"messages": messages}
     r = requests.post(
-        "https://api.line.me/v2/bot/message/push",
+        url,
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        json={"to": user, "messages": [{"type": "text", "text": c} for c in chunks]},
+        json=body,
         timeout=20,
     )
     if r.status_code != 200:
         print(f"!! LINE 推播失敗 {r.status_code}: {r.text}")
         return False
+    print(f"  已傳送 LINE（{'個人' if 'to' in body else '廣播'}）")
     return True
 
 
