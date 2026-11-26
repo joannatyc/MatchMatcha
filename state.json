@@ -2,10 +2,106 @@
   "fail_count": 0,
   "initialized": true,
   "items": {
-    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g28200c6": {
-      "name": "Hojicha Mix",
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1111020c1": {
+      "name": "Tenju",
       "source": "stripe-data",
-      "status": "in",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1121020c1": {
+      "name": "Choan",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1131020c1": {
+      "name": "Eiju",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1135020c1": {
+      "name": "Tsubokiri Matcha",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1141020c1": {
+      "name": "Unkaku",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1151020c1": {
+      "name": "Kinrin",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1161020c1": {
+      "name": "Wako",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1171020c1": {
+      "name": "Yugen",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1181040c1": {
+      "name": "Chigi no Shiro",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1191040c1": {
+      "name": "Isuzu",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/11a1040c1": {
+      "name": "Aoarashi",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/11b5040c1": {
+      "name": "Gabaron Matcha",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1d48020c1": {
+      "name": "Christmas Limited Edition Matcha Seiya no Shiro",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1dbd020c1": {
+      "name": "Matcha for cold water Suzukumo",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1dcd020c1": {
+      "name": "Matcha for cold water Awaraku",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1f94020c1": {
+      "name": "Low Caffeine Matcha",
+      "source": "stripe-data",
+      "status": "out",
+      "variants": {}
+    },
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g36020c1": {
+      "name": "Kiwami Choan",
+      "source": "stripe-data",
+      "status": "out",
       "variants": {}
     }
   }
