@@ -27,7 +27,12 @@ from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
 
-DEFAULT_URL = "https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha"
+# 預設監測：Principal Matcha（全部）＋ Limited Edition（只留名稱有 matcha 的）
+# 格式：網址|關鍵字（關鍵字可省略；多個網址用逗號分隔）
+DEFAULT_URL = (
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/principal,"
+    "https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/gentei|matcha"
+)
 TW = timezone(timedelta(hours=8))
 HEADERS = {
     "User-Agent": (
@@ -184,9 +189,25 @@ def parse_product(html):
         disabled = btn.has_attr("disabled") or "disabled" in " ".join(btn.get("class", []))
         return ("out" if disabled else "in"), {}, "cart-button"
 
-    # 5) 最後用文字判斷
+    # 5) 最後用文字判斷，並記下是哪段文字（方便檢查有沒有判斷錯）
     body = soup.select_one("main") or soup.body or soup
-    return classify(body), {}, "text"
+    status = classify(body)
+    text = re.sub(r"\s+", " ", body.get_text(" ", strip=True))
+    low = text.lower()
+    hit = ""
+    for w in (OUT_WORDS if status == "out" else IN_WORDS if status == "in" else []):
+        i = low.find(w)
+        if i >= 0:
+            hit = text[max(0, i - 50): i + len(w) + 30]
+            break
+    if status == "unknown":
+        # 找出頁面上跟購買有關的文字，協助判斷
+        for w in ["cart", "purchase", "available", "inquir", "japan only", "domestic"]:
+            i = low.find(w)
+            if i >= 0:
+                hit = text[max(0, i - 50): i + 50]
+                break
+    return status, {}, f"text: …{hit}…" if hit else "text"
 
 
 def scan(url, max_pages=10):
@@ -241,15 +262,23 @@ def save_state(path, state):
 # ---------- 主流程 ----------
 
 def check_once(debug=False):
-    urls = [u.strip() for u in (os.environ.get("WATCH_URLS") or DEFAULT_URL).split(",") if u.strip()]
+    targets = []  # [(網址, 該網址專用關鍵字)]
+    for entry in (os.environ.get("WATCH_URLS") or DEFAULT_URL).split(","):
+        if entry.strip():
+            u, _, kw = entry.strip().partition("|")
+            targets.append((u.strip(), kw.strip().lower()))
+    urls = [u for u, _ in targets]
     keywords = [k.strip().lower() for k in os.environ.get("WATCH_KEYWORDS", "").split(",") if k.strip()]
     state_path = os.environ.get("STATE_FILE", "state.json")
     state = load_state(state_path)
 
     current = {}
     try:
-        for u in urls:
-            current.update(scan(u))
+        for u, kw in targets:
+            found = scan(u)
+            if kw:
+                found = {k: v for k, v in found.items() if kw in v["name"].lower()}
+            current.update(found)
     except Exception as e:  # 網路錯誤、被擋等
         state["fail_count"] = state.get("fail_count", 0) + 1
         print(f"[{now_tw()}] 抓取失敗（連續 {state['fail_count']} 次）：{e}")
@@ -315,7 +344,7 @@ def check_once(debug=False):
             if new_vars:
                 lines.append("  規格：" + "、".join(new_vars))
             lines.append(f"  {u}")
-        lines += ["", "快去搶 👉 " + urls[0]]
+        lines += ["", "快去搶 👉 " + "\n".join(urls)]
         line_push("\n".join(lines))
 
     print(f"[{now_tw()}] 檢查完成：{len(current)} 項，"
