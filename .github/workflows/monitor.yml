@@ -1,12 +1,13 @@
 name: Matcha restock monitor
 
 on:
+  workflow_dispatch:          # 手動啟動，或由上一輪自動接續
   schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch:
+    - cron: "17 */6 * * *"    # 備援：萬一接力中斷，每 6 小時嘗試重新啟動
 
 permissions:
-  contents: write
+  contents: write             # 儲存 state.json
+  actions: write              # 讓這一輪結束時自動啟動下一輪
 
 concurrency:
   group: matcha-monitor
@@ -15,25 +16,40 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
+
       - run: pip install -r requirements.txt
-      - name: Check stock
+
+      - name: Check stock every 5 minutes (about 5.5 hours)
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
           WATCH_URLS: ${{ vars.WATCH_URLS }}
           WATCH_KEYWORDS: ${{ vars.WATCH_KEYWORDS }}
-        run: python monitor.py
-      - name: Save state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add state.json
-          git diff --cached --quiet || (git commit -m "update stock state" && git push)
+          end=$((SECONDS + 330*60))
+          while [ $SECONDS -lt $end ]; do
+            python monitor.py || echo "!! 這次檢查出錯，5 分鐘後再試"
+            git add state.json 2>/dev/null || true
+            if ! git diff --cached --quiet; then
+              git commit -q -m "update stock state"
+              git pull -q --rebase || true
+              git push -q || echo "!! state.json 儲存失敗"
+            fi
+            sleep 300
+          done
 
+      - name: Start next round
+        if: success() || failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run monitor.yml --ref "${{ github.ref_name }}"
