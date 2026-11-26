@@ -16,6 +16,7 @@
   python monitor.py --debug    只印出抓到的商品與庫存狀態，不發通知
 """
 import argparse
+import base64
 import json
 import os
 import re
@@ -149,6 +150,30 @@ def parse_page(html, page_url):
     return items, next_url
 
 
+def decode_inline_scripts(html):
+    """把 <script src="data:text/javascript;base64,..."> 解碼，回傳 {id: 內容}"""
+    out = {}
+    for m in re.finditer(r'<script[^>]*?(?:id="([^"]*)")?[^>]*src="data:text/javascript;base64,([^"]+)"', html):
+        try:
+            out[m.group(1) or f"script{len(out)}"] = base64.b64decode(m.group(2)).decode("utf-8", "replace")
+        except (ValueError, TypeError):
+            pass
+    return out
+
+
+def embedded_in_stock(html):
+    """從 wcStripeSettings 找商品的 isInStock；找不到回傳 None"""
+    texts = list(decode_inline_scripts(html).values()) + [html]
+    for js in texts:
+        i = js.find('"product":{')
+        while i >= 0:
+            m = re.search(r'"isInStock"\s*:\s*(true|false)', js[i:i + 3000])
+            if m:
+                return m.group(1) == "true"
+            i = js.find('"product":{', i + 1)
+    return None
+
+
 def parse_product(html):
     """解析單一商品頁。回傳 (status, {規格: True/False}, 判斷依據)"""
     soup = BeautifulSoup(html, "html.parser")
@@ -175,6 +200,11 @@ def parse_product(html):
         variants[label] = variants.get(label, False) or ok
     if variants:
         return ("in" if any(variants.values()) else "out"), variants, "variant-rows"
+
+    # 0b) 頁面隱藏的付款設定（wcStripeSettings）裡有 "isInStock"，沒登入也看得到
+    stock = embedded_in_stock(html)
+    if stock is not None:
+        return ("in" if stock else "out"), {}, "stripe-data"
 
     # 1) WooCommerce 多規格商品：表單裡有每個規格的庫存 JSON
     form = soup.select_one("form.variations_form, form[data-product_variations]")
@@ -255,76 +285,6 @@ def scan(url, max_pages=10):
 
 
 
-# ---------- WooCommerce Store API（不需登入就能查庫存） ----------
-
-SHOP_BASE = "https://www.marukyu-koyamaen.co.jp/english/shop"
-
-
-def product_id_from_html(html):
-    soup = BeautifulSoup(html, "html.parser")
-    el = soup.select_one("div[id^=product-]")
-    if el and re.fullmatch(r"product-\d+", el.get("id", "")):
-        return int(el["id"].split("-")[1])
-    m = re.search(r'name="add-to-cart" value="(\d+)"|data-product_id="(\d+)"', html)
-    return int(m.group(1) or m.group(2)) if m else None
-
-
-def store_api(path, params=None):
-    """先試 /wp-json/...，不行再試 ?rest_route=...；回傳 JSON"""
-    errors = []
-    for mode in ("wp-json", "rest_route"):
-        if mode == "wp-json":
-            url, p = f"{SHOP_BASE}/wp-json/wc/store/v1{path}", params
-        else:
-            url, p = f"{SHOP_BASE}/", dict(params or {}, rest_route=f"/wc/store/v1{path}")
-        try:
-            r = requests.get(url, params=p, timeout=30,
-                             headers={**HEADERS, "Accept": "application/json"})
-            if r.status_code == 200 and "json" in r.headers.get("content-type", ""):
-                return r.json()
-            errors.append(f"{mode}: HTTP {r.status_code} {r.text[:120]!r}")
-        except (requests.RequestException, ValueError) as e:
-            errors.append(f"{mode}: {e}")
-    raise RuntimeError("Store API 無法使用 → " + " | ".join(errors))
-
-
-def variant_label(obj):
-    vals = [a.get("value") for a in (obj.get("attributes") or []) if a.get("value")]
-    return " / ".join(vals) or obj.get("name") or str(obj.get("id"))
-
-
-def api_check(current):
-    """用 Store API 更新 current 裡每個商品的 status / variants"""
-    by_pid = {v["pid"]: v for v in current.values() if v.get("pid")}
-    if not by_pid:
-        raise RuntimeError("找不到任何商品 ID")
-    ids = list(by_pid)
-    data = []
-    for i in range(0, len(ids), 50):
-        chunk = ids[i:i + 50]
-        data += store_api("/products", {"include": ",".join(map(str, chunk)), "per_page": 100})
-    got = {p["id"]: p for p in data if isinstance(p, dict) and "id" in p}
-    if not got:
-        raise RuntimeError(f"Store API 沒有回傳商品資料：{str(data)[:200]}")
-    for pid, v in by_pid.items():
-        p = got.get(pid)
-        if p is None:
-            v["status"], v["source"] = "unknown", "api: not found"
-            continue
-        v["status"] = "in" if p.get("is_in_stock") else "out"
-        v["source"] = "api"
-        v["variants"] = {}
-        # 有貨時再查是哪個規格有貨
-        if v["status"] == "in":
-            for var in (p.get("variations") or [])[:10]:
-                try:
-                    d = store_api(f"/products/{var['id']}")
-                    v["variants"][variant_label(var)] = bool(d.get("is_in_stock"))
-                except Exception:
-                    pass
-                time.sleep(0.5)
-
-
 # ---------- LINE ----------
 
 def line_push(text):
@@ -397,33 +357,34 @@ def check_once(debug=False):
     if keywords:
         current = {u: v for u, v in current.items() if any(k in v["name"].lower() for k in keywords)}
 
-    # 網站沒登入時不顯示庫存，所以改用 WooCommerce 公開的商品資料（Store API）
+    # 逐一打開商品頁檢查庫存
     state.pop("debug", None)
-    pids = state.setdefault("pids", {})
+    state.pop("pids", None)
+    page_errors = 0
     for u, v in current.items():
+        v.pop("pid", None)
         if u in urls:
             continue
-        pid = v.pop("pid", None) or pids.get(u)
-        if not pid:
-            try:
-                pid = product_id_from_html(fetch(u))
-                time.sleep(1)
-            except Exception as e:
-                print(f"  讀不到商品頁 {u}：{e}")
-        if pid:
-            pids[u] = pid
-            v["pid"] = pid
-    try:
-        api_check(current)
-    except Exception as e:
+        try:
+            page_html = fetch(u)
+            v["status"], v["variants"], v["source"] = parse_product(page_html)
+            if v["status"] == "unknown" and "debug" not in state:
+                # 記下這頁有哪些隱藏資料，方便除錯
+                scripts = decode_inline_scripts(page_html)
+                state["debug"] = {
+                    "url": u,
+                    "scripts": sorted(scripts)[:40],
+                    "has_isInStock": "isInStock" in page_html or any("isInStock" in t for t in scripts.values()),
+                    "has_stock_word": bool(re.search(r"in.stock|out.of.stock|instock|outofstock", page_html, re.I)),
+                }
+        except Exception as e:
+            page_errors += 1
+            v["source"] = f"error: {e}"[:120]
+        time.sleep(1)
+    if page_errors:
+        print(f"  有 {page_errors} 個商品頁讀取失敗，這次先略過")
+    if current and page_errors == len([u for u in current if u not in urls]):
         state["fail_count"] = state.get("fail_count", 0) + 1
-        state["debug"] = {"api_error": str(e)[:500]}
-        print(f"[{now_tw()}] 讀取庫存資料失敗（連續 {state['fail_count']} 次）：{e}")
-        if state["fail_count"] in (1, FAIL_ALERT_AFTER) and not debug:
-            line_push(f"⚠️ 抹茶監測讀不到庫存資料，請把 state.json 傳給 Claude 檢查。\n錯誤：{str(e)[:200]}")
-        if not debug:
-            save_state(state_path, state)
-        return
 
     if debug:
         print(f"共找到 {len(current)} 項商品：")
