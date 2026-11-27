@@ -23,7 +23,7 @@
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1135020c1": {
       "name": "Tsubokiri Matcha",
       "source": "stripe-data",
-      "status": "in",
+      "status": "out",
       "variants": {}
     },
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1141020c1": {
@@ -101,7 +101,7 @@
     "https://www.marukyu-koyamaen.co.jp/english/shop/products/1g36020c1": {
       "name": "Kiwami Choan",
       "source": "stripe-data",
-      "status": "in",
+      "status": "out",
       "variants": {}
     }
   }
